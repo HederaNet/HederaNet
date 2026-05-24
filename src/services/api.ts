@@ -1,7 +1,7 @@
 // src/services/api.ts
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.hederanet.io';
+const API_BASE_URL = 'https://api.hederanet.online';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

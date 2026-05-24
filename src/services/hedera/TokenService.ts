@@ -252,7 +252,7 @@ class HederaTokenService {
 
       // Fetch price from API
       const response = await fetch(
-        `https://api.hederanet.io/v1/tokens/${tokenId}/price`,
+        `https://api.hederanet.online/v1/tokens/${tokenId}/price`,
         {
           method: 'GET',
           headers: {

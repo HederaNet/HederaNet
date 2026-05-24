@@ -224,7 +224,7 @@ class WalletService {
   async connectMetaMask(): Promise<WalletAccount> {
     try {
       // MetaMask mobile deep link
-      const dappUrl = 'hederanet.io'; // Your dapp URL
+      const dappUrl = 'hederanet.online'; // Your dapp URL
       const metamaskUrl = `https://metamask.app.link/dapp/${dappUrl}`;
 
       console.log('Opening MetaMask:', metamaskUrl);
