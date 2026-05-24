@@ -1,8 +1,144 @@
-# HederaNet 🌐⚡
+# 🌐 HederaNet — Community-Owned Internet & Energy for Africa
+
+[![CI](https://github.com/HederaNet/HederaNet/actions/workflows/ci.yml/badge.svg)](https://github.com/HederaNet/HederaNet/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Built on Hedera](https://img.shields.io/badge/Built%20on-Hedera%20Hashgraph-8259EF)](https://hedera.com)
 
 > **Empowering Communities Through Decentralized Infrastructure**
 
 HederaNet transforms ordinary community members into infrastructure entrepreneurs through a DePIN (Decentralized Physical Infrastructure Network) that enables communities to own and operate their internet, energy, and compute services.
+
+## Monorepo Structure
+
+```
+hederanet/
+├── apps/
+│   ├── web/              # Next.js 14 — Primary UNICEF demo vehicle
+│   ├── api/              # Node.js/Express API + Socket.io + BullMQ
+│   └── mobile/           # Expo SDK 51 React Native (iOS + Android)
+├── packages/
+│   ├── types/            # Shared TypeScript interfaces & enums
+│   ├── config/           # Zod env validation
+│   ├── hedera-sdk/       # HCS/HTS/HSCS service layer
+│   ├── contracts/        # Hardened Solidity + Hardhat tests
+│   └── ui/               # Shared components
+├── services/
+│   └── ussd/             # Africa's Talking USSD (feature phones)
+├── monitoring/           # Prometheus + Grafana
+└── docker-compose.yml
+```
+
+## Testnet Deployments (preserved)
+
+| Resource | ID | Type |
+|----------|-----|------|
+| HNET Token | `0.0.7153593` | HTS Governance/Staking |
+| HEC Token | `0.0.7153605` | HTS Energy Credits |
+| HCC Token | `0.0.7153651` | HTS Compute Credits |
+| USDC Token | `0.0.9038720` | HTS Testnet Stablecoin |
+| Reputation NFT | `0.0.7153666` | HTS Non-Fungible |
+| Energy Trading Contract | `0.0.7153712` | HSCS |
+| Service Payment Contract | `0.0.7153764` | HSCS |
+| Governance Contract | `0.0.7153782` | HSCS |
+| Governance Topic | `0.0.1006` | HCS |
+| Service Quality Topic | `0.0.1005` | HCS |
+| Energy Trading Topic | `0.0.1007` | HCS |
+
+Verify all at [HashScan Testnet](https://hashscan.io/testnet)
+
+## Quick Start
+
+```bash
+# Prerequisites: Node 20+, pnpm 9+, Docker
+
+git clone https://github.com/HederaNet/HederaNet.git && cd HederaNet
+pnpm install
+
+# Configure environment
+cp apps/api/.env.example apps/api/.env
+# Edit apps/api/.env with your Hedera testnet credentials
+
+# Start infrastructure
+docker-compose up -d postgres redis
+
+# Database setup (migrations run automatically on first startup)
+pnpm db:migrate
+
+# Deploy our testnet USDC token (one-time — adds USDC_TOKEN_ID to .env)
+pnpm --filter @hederanet/api deploy:usdc
+
+# Run everything
+pnpm dev
+```
+
+**URLs after startup:**
+- 🌐 Web App (Landing): http://localhost:3000
+- 📊 Impact Dashboard (UNICEF demo): http://localhost:3000/impact
+- 🗺️ Network Map: http://localhost:3000/map
+- ⚙️ API: http://localhost:4000
+- 📱 USSD Service: http://localhost:5000
+
+## Environment Variables
+
+Key variables (see `apps/api/.env.example` for full list):
+
+```env
+HEDERA_NETWORK=testnet
+HEDERA_OPERATOR_ID=0.0.YOUR_ACCOUNT_ID
+HEDERA_OPERATOR_PRIVATE_KEY=your_private_key
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/hederanet
+JWT_SECRET=at-least-32-char-secret
+```
+
+## Development
+
+```bash
+pnpm dev        # All apps in parallel
+pnpm build      # Build all
+pnpm test       # All tests
+pnpm typecheck  # TypeScript strict check
+pnpm lint       # ESLint
+
+# Smart contracts
+pnpm --filter @hederanet/contracts compile
+pnpm --filter @hederanet/contracts test
+pnpm --filter @hederanet/contracts deploy:testnet
+
+# Database
+pnpm db:migrate && pnpm db:seed
+pnpm db:studio    # Prisma Studio
+```
+
+## USSD Access (*384*1#)
+
+Feature phone support for Africa via Africa's Talking:
+
+```
+*384*1# → Main Menu
+1. My Account    → balance, transactions, subscriptions
+2. Energy Market → buy/sell solar kWh peer-to-peer
+3. Internet      → plans, data balance, upgrade
+4. Earnings      → daily/monthly, withdraw to M-Pesa/MTN MoMo
+5. Register      → deploy infrastructure node
+```
+
+Languages: English, Yoruba, Hausa, Swahili
+
+## New in this version (MVP)
+
+- **packages/contracts**: `EnergyMarket.sol` (hardened with ReentrancyGuard, Pausable, dispute resolution), `OperatorStaking.sol` (Bronze/Silver/Gold tiers, slashing), `HederaNetOracle.sol` (3-of-5 multi-sig)
+- **apps/api**: Full REST API + WebSocket + BullMQ queues + Prisma schema; email/password + Google OAuth; custodial Hedera account provisioning; token market with USDC swaps and faucet
+- **apps/web**: Next.js 14 with landing, `/map`, `/dashboard` (hotspots, energy, governance, earnings, staking, market), `/impact`, `/explore`; profile management with avatar upload
+- **apps/mobile**: Migrated to Expo SDK 51 with EAS Build, biometrics, deep linking
+- **services/ussd**: Africa's Talking USSD gateway with Redis session management
+- **DevOps**: Docker, GitHub Actions CI/CD, Prometheus/Grafana
+
+## UNICEF Open Source Compliance
+
+- License: **MIT**
+- Impact metrics at `/impact` — publicly accessible, no auth required
+- All data anchored on Hedera (publicly verifiable on HashScan)
+- No vendor lock-in
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React Native](https://img.shields.io/badge/React%20Native-0.73-blue.svg)](https://reactnative.dev/)
@@ -38,7 +174,7 @@ HederaNet is a community-owned decentralized infrastructure network built on Hed
 
 ### Key Statistics
 
-- **Multi-Token Economy**: HNET (utility), HEC (energy credits), HCC (compute credits)
+- **Multi-Token Economy**: HNET (utility), HEC (energy credits), HCC (compute credits), USDC (testnet stablecoin)
 - **Smart Contract Automation**: Service payments, energy trading, governance
 - **Immutable Logging**: Service quality, governance actions via HCS
 - **Decentralized Storage**: Metadata, audit reports via HFS
@@ -671,10 +807,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: [docs.hederanet.io](https://hederanet.gitbook.io/hederanet-docs/)
-- **Website**: https://hederanet.vercel.app
+- **Documentation**: [docs.hederanet.online](https://hederanet.gitbook.io/hederanet-docs/)
+- **Website**: https://hederanet.online
 - **X(Twitter)**: [@HederaNet](https://x.com/hederanet)
-- **Email**: support@hederanet.io
+- **Email**: support@hederanet.online
 - **GitHub Issues**: [Report bugs](https://github.com/hederanet/hederanet/issues)
 
 ---
@@ -715,4 +851,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ by the HederaNet Community**
 
-[Website](https://hederanet.vercel.app/) • [Documentation](https://docs.hederanet.io) • [Discord](https://discord.gg/hederanet)
+[Website](https://hederanet.online) • [Documentation](https://docs.hederanet.online) • [Discord](https://discord.gg/hederanet)
