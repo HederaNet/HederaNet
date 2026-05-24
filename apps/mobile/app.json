@@ -1,0 +1,64 @@
+{
+  "expo": {
+    "name": "HederaNet",
+    "slug": "hederanet",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a7a4a"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hederanet.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "HederaNet uses the camera for QR code scanning to pair IoT devices.",
+        "NSFaceIDUsageDescription": "HederaNet uses Face ID to secure transaction signing.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ]
+      }
+    },
+    "android": {
+      "package": "com.hederanet.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a7a4a"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      ["expo-local-authentication", { "faceIDPermission": "Allow HederaNet to use Face ID for transaction signing." }],
+      ["expo-barcode-scanner", { "cameraPermission": "Allow HederaNet to access camera for QR scanning." }],
+      ["expo-notifications", { "sounds": ["./assets/notification.wav"] }]
+    ],
+    "scheme": "hederanet",
+    "extra": {
+      "eas": { "projectId": "PLACEHOLDER_EAS_PROJECT_ID" }
+    }
+  }
+}
