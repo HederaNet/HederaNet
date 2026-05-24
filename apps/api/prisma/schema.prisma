@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUBSCRIBER
+  OPERATOR
+  ADMIN
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OperatorTier {
+  BRONZE
+  SILVER
+  GOLD
+}
+
+enum TradeStatus {
+  PENDING
+  CONFIRMED
+  DISPUTED
+  RESOLVED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum TransactionType {
+  SUBSCRIPTION
+  ENERGY_TRADE
+  STAKE
+  UNSTAKE
+  REWARD
+  WITHDRAWAL
+  GOVERNANCE
+  SWAP
+  FAUCET
+}
+
+enum SwapStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ProposalStatus {
+  PENDING
+  ACTIVE
+  PASSED
+  REJECTED
+  EXECUTED
+}
+
+enum VoteChoice {
+  YES
+  NO
+  ABSTAIN
+}
+
+enum IoTReadingType {
+  ENERGY_DELIVERY
+  NETWORK_UPTIME
+  COMPUTE_JOB
+  SOLAR_GENERATION
+}
+
+model User {
+  id               String     @id @default(cuid())
+  hederaAccountId  String     @unique
+  hederaPublicKey  String?
+  hederaPrivateKey String?    // AES-256-GCM encrypted
+  email            String?    @unique
+  name             String?
+  avatarUrl        String?
+  passwordHash     String?
+  googleId         String?    @unique
+  role             UserRole   @default(SUBSCRIBER)
+  kycStatus        KycStatus  @default(PENDING)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  operator      Operator?
+  subscriptions Subscription[] @relation("SubscriberSubscriptions")
+
+  @@index([hederaAccountId])
+  @@index([email])
+}
+
+model Operator {
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  hederaAccountId String       @unique
+  tier            OperatorTier @default(BRONZE)
+  stakedHbar      Float        @default(0)
+  reputationScore Float        @default(0)
+  country         String
+  city            String
+  lat             Float
+  lng             Float
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user                User               @relation(fields: [userId], references: [id])
+  hotspots            Hotspot[]
+  solarInstallations  SolarInstallation[]
+
+  @@index([lat, lng])
+  @@index([tier])
+}
+
+model Hotspot {
+  id                   String   @id @default(cuid())
+  operatorId           String
+  hcsTopicId           String   @unique
+  lat                  Float
+  lng                  Float
+  coverageRadiusMeters Int
+  monthlyPriceHbar     Float
+  isActive             Boolean  @default(true)
+  installedAt          DateTime @default(now())
+  uptimePct30d         Float    @default(100)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  operator      Operator       @relation(fields: [operatorId], references: [id])
+  subscriptions Subscription[]
+
+  @@index([lat, lng])
+  @@index([isActive])
+}
+
+model SolarInstallation {
+  id         String   @id @default(cuid())
+  operatorId String
+  capacityKw Float
+  lat        Float
+  lng        Float
+  hcsTopicId String   @unique
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  operator Operator       @relation(fields: [operatorId], references: [id])
+  listings EnergyListing[]
+
+  @@index([lat, lng])
+}
+
+model EnergyListing {
+  id              String   @id @default(cuid())
+  installationId  String
+  pricePerKwhHbar Float
+  availableUnits  Float
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  installation SolarInstallation @relation(fields: [installationId], references: [id])
+  trades       EnergyTrade[]
+
+  @@index([isActive])
+}
+
+model EnergyTrade {
+  id               String      @id @default(cuid())
+  listingId        String
+  buyerAccountId   String
+  sellerAccountId  String
+  units            Float
+  totalHbar        Float
+  status           TradeStatus @default(PENDING)
+  contractTradeId  String?
+  confirmedAt      DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  listing     EnergyListing @relation(fields: [listingId], references: [id])
+  iotReadings IoTReading[]
+
+  @@index([buyerAccountId])
+  @@index([sellerAccountId])
+  @@index([status])
+}
+
+model Subscription {
+  id                  String             @id @default(cuid())
+  subscriberAccountId String
+  hotspotId           String
+  nftTokenId          String?
+  startsAt            DateTime
+  expiresAt           DateTime
+  status              SubscriptionStatus @default(ACTIVE)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  hotspot      Hotspot @relation(fields: [hotspotId], references: [id])
+  subscriber   User    @relation("SubscriberSubscriptions", fields: [subscriberAccountId], references: [hederaAccountId])
+
+  @@index([subscriberAccountId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model Transaction {
+  id            String            @id @default(cuid())
+  type          TransactionType
+  fromAccount   String
+  toAccount     String?
+  amountHbar    Float
+  contractId    String?
+  txHashHedera  String?           @unique
+  status        TransactionStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+
+  @@index([fromAccount])
+  @@index([status])
+  @@index([type])
+}
+
+model Proposal {
+  id                String         @id @default(cuid())
+  proposerAccountId String
+  title             String
+  description       String
+  votingEndsAt      DateTime
+  status            ProposalStatus @default(PENDING)
+  yesVotes          Float          @default(0)
+  noVotes           Float          @default(0)
+  abstainVotes      Float          @default(0)
+  contractProposalId String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  votes Vote[]
+
+  @@index([status])
+}
+
+model Vote {
+  id               String     @id @default(cuid())
+  proposalId       String
+  voterAccountId   String
+  choice           VoteChoice
+  votingPower      Float
+  txHashHedera     String?
+  createdAt        DateTime   @default(now())
+
+  proposal Proposal @relation(fields: [proposalId], references: [id])
+
+  @@unique([proposalId, voterAccountId])
+}
+
+model IoTReading {
+  id               String         @id @default(cuid())
+  deviceId         String
+  readingType      IoTReadingType
+  value            Float
+  unit             String
+  tradeId          String?
+  confirmedOnChain Boolean        @default(false)
+  hcsMessageId     String?
+  timestamp        DateTime
+
+  trade EnergyTrade? @relation(fields: [tradeId], references: [id])
+
+  @@index([deviceId])
+  @@index([readingType])
+}
+
+model MarketToken {
+  id               String   @id @default(cuid())
+  symbol           String   @unique
+  name             String
+  tokenId          String?  // HTS token ID (null for HBAR)
+  decimals         Int
+  priceUsdc        Float    // current spot price in USDC (derived from AMM reserves for pool tokens)
+  poolReserveToken Float    @default(0) // AMM pool token-side reserve (0 = no pool / external price)
+  poolReserveUsdc  Float    @default(0) // AMM pool USDC-side reserve
+  logoEmoji        String   @default("🪙")
+  isActive         Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  @@index([symbol])
+}
+
+model SwapTransaction {
+  id            String     @id @default(cuid())
+  userAccountId String
+  fromSymbol    String
+  toSymbol      String
+  fromAmount    Float
+  toAmount      Float
+  priceAtSwap   Float
+  status        SwapStatus @default(PENDING)
+  hederaTxId    String?
+  errorMsg      String?
+  createdAt     DateTime   @default(now())
+
+  @@index([userAccountId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model FaucetClaim {
+  id          String   @id @default(cuid())
+  accountId   String
+  amountUsdc  Float
+  createdAt   DateTime @default(now())
+
+  @@index([accountId])
+  @@index([createdAt])
+}
+
+model NetworkStats {
+  id                    String   @id @default(cuid())
+  totalActiveHotspots   Int
+  totalUsers            Int
+  totalOperators        Int
+  energyTradedKwhToday  Float
+  totalHbarSettled      Float
+  totalSubscriptions    Int
+  recordedAt            DateTime @default(now())
+
+  @@index([recordedAt])
+}
