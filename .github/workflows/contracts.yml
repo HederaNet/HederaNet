@@ -1,0 +1,36 @@
+name: Smart Contracts
+
+on:
+  push:
+    paths:
+      - 'packages/contracts/**'
+  pull_request:
+    paths:
+      - 'packages/contracts/**'
+
+jobs:
+  compile-and-test:
+    name: Compile, Test & Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Compile contracts
+        run: pnpm --filter @hederanet/contracts compile
+
+      - name: Run tests
+        run: pnpm --filter @hederanet/contracts test
+
+      - name: Check coverage
+        run: pnpm --filter @hederanet/contracts coverage
+
+      - name: Lint Solidity
+        run: pnpm --filter @hederanet/contracts lint

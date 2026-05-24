@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  lint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  test-api:
+    name: API Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: hederanet_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/hederanet_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: test-secret-at-least-32-characters-long
+      HEDERA_NETWORK: testnet
+      HEDERA_OPERATOR_ID: 0.0.1234
+      HEDERA_OPERATOR_PRIVATE_KEY: placeholder
+      HEDERA_MIRROR_NODE_URL: https://testnet.mirrornode.hedera.com
+      HNET_TOKEN_ID: 0.0.7153593
+      HEC_TOKEN_ID: 0.0.7153605
+      HCC_TOKEN_ID: 0.0.7153651
+      REPUTATION_NFT_ID: 0.0.7153666
+      ENERGY_TRADING_CONTRACT_ID: 0.0.7153712
+      SERVICE_PAYMENT_CONTRACT_ID: 0.0.7153764
+      GOVERNANCE_CONTRACT_ID: 0.0.7153782
+      GOVERNANCE_TOPIC_ID: 0.0.1006
+      SERVICE_QUALITY_TOPIC_ID: 0.0.1005
+      ENERGY_TRADING_TOPIC_ID: 0.0.1007
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @hederanet/types build
+      - run: pnpm --filter @hederanet/config build
+      - run: pnpm --filter @hederanet/api db:generate
+      - run: pnpm --filter @hederanet/api db:push
+      - run: pnpm --filter @hederanet/api test
+
+  test-contracts:
+    name: Smart Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @hederanet/contracts compile
+      - run: pnpm --filter @hederanet/contracts test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [typecheck, lint]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
