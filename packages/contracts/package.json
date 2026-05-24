@@ -1,0 +1,30 @@
+{
+  "name": "@hederanet/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage",
+    "deploy:testnet": "hardhat run scripts/deploy-all.ts --network testnet",
+    "verify": "hardhat run scripts/verify-deployment.ts --network testnet",
+    "seed": "hardhat run scripts/seed-testnet.ts --network testnet",
+    "lint": "solhint 'contracts/**/*.sol'"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.2"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.7",
+    "@nomicfoundation/hardhat-ethers": "^3.0.6",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.7",
+    "chai": "^4.4.1",
+    "ethers": "^6.13.0",
+    "hardhat": "^2.22.0",
+    "solhint": "^5.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
+  }
+}
