@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <path d="M24 2 L42 12 L42 36 L24 46 L6 36 L6 12 Z" fill="#1a7a4a"/>
+  <line x1="24" y1="14" x2="35" y2="20" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+  <line x1="24" y1="14" x2="13" y2="20" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+  <line x1="35" y1="20" x2="35" y2="30" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+  <line x1="13" y1="20" x2="13" y2="30" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+  <line x1="35" y1="30" x2="24" y2="36" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+  <line x1="13" y1="30" x2="24" y2="36" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.7"/>
+  <circle cx="24" cy="14" r="3.5" fill="#f59e0b"/>
+  <circle cx="35" cy="20" r="2.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="13" cy="20" r="2.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="35" cy="30" r="2.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="13" cy="30" r="2.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="24" cy="36" r="3.5" fill="#f59e0b"/>
+  <circle cx="24" cy="25" r="2.5" fill="#f59e0b"/>
+</svg>
