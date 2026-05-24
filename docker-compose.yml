@@ -1,0 +1,110 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hederanet
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/hederanet
+      REDIS_URL: redis://redis:6379
+      HEDERA_NETWORK: testnet
+      HEDERA_OPERATOR_ID: ${HEDERA_OPERATOR_ID}
+      HEDERA_OPERATOR_PRIVATE_KEY: ${HEDERA_OPERATOR_PRIVATE_KEY}
+      HEDERA_MIRROR_NODE_URL: https://testnet.mirrornode.hedera.com
+      JWT_SECRET: ${JWT_SECRET}
+      HNET_TOKEN_ID: 0.0.7153593
+      HEC_TOKEN_ID: 0.0.7153605
+      HCC_TOKEN_ID: 0.0.7153651
+      REPUTATION_NFT_ID: 0.0.7153666
+      ENERGY_TRADING_CONTRACT_ID: 0.0.7153712
+      SERVICE_PAYMENT_CONTRACT_ID: 0.0.7153764
+      GOVERNANCE_CONTRACT_ID: 0.0.7153782
+      GOVERNANCE_TOPIC_ID: 0.0.1006
+      SERVICE_QUALITY_TOPIC_ID: 0.0.1005
+      ENERGY_TRADING_TOPIC_ID: 0.0.1007
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      PORT: 4000
+      NODE_ENV: development
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  ussd:
+    build:
+      context: .
+      dockerfile: services/ussd/Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379
+      HEDERA_NETWORK: testnet
+      HEDERA_OPERATOR_ID: ${HEDERA_OPERATOR_ID}
+      HEDERA_OPERATOR_PRIVATE_KEY: ${HEDERA_OPERATOR_PRIVATE_KEY}
+      HEDERA_MIRROR_NODE_URL: https://testnet.mirrornode.hedera.com
+      USSD_PORT: 5000
+      HNET_TOKEN_ID: 0.0.7153593
+      HEC_TOKEN_ID: 0.0.7153605
+      ENERGY_TRADING_TOPIC_ID: 0.0.1007
+    ports:
+      - "5000:5000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: hederanet
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  grafana_data:
