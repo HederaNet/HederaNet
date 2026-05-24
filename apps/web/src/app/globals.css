@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-forest: #1a7a4a;
+    --color-cream: #f7f5f0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-forest-700 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-forest-800 active:scale-95 disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl border-2 border-forest-700 px-6 py-3 text-sm font-semibold text-forest-700 transition-all hover:bg-forest-50 active:scale-95;
+  }
+
+  .card {
+    @apply rounded-2xl bg-white shadow-sm border border-cream-200 p-6;
+  }
+
+  .stat-card {
+    @apply card flex flex-col gap-2;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  .badge-bronze { @apply badge bg-amber-100 text-amber-700; }
+  .badge-silver { @apply badge bg-gray-100 text-gray-700; }
+  .badge-gold   { @apply badge bg-yellow-100 text-yellow-700; }
+  .badge-active { @apply badge bg-forest-100 text-forest-700; }
+  .badge-inactive { @apply badge bg-gray-100 text-gray-500; }
+}
+
+/* Leaflet popup overrides */
+.leaflet-popup-content-wrapper {
+  @apply rounded-xl shadow-xl border border-cream-200 p-0 overflow-hidden;
+}
+.leaflet-popup-content { margin: 0 !important; }
+.leaflet-popup-tip { background: white !important; }
