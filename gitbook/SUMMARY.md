@@ -1,4 +1,6 @@
-# Table of Contents
+# Table of contents
+
+* [Outline](README.md)
 
 ## Introduction
 
@@ -24,7 +26,7 @@
 
 * [Internet Services](subscribers/internet-service.md)
 * [Buying Energy](subscribers/buying-energy.md)
-* [USSD Access (*384*1#)](subscribers/ussd-access.md)
+* [USSD Access (3841#)](subscribers/ussd-access.md)
 
 ## Platform
 
